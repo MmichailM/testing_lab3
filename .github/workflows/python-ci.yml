@@ -31,5 +31,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r python/requirements.txt
 
-      - name: Run tests
-        run: python -m pytest python/tests
+      - name: Run tests with coverage
+        run: |
+          python -m pytest python/tests \
+            --cov=python/src \
+            --cov-report=term-missing \
+            --cov-report=xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
