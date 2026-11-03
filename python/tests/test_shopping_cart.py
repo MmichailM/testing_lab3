@@ -163,3 +163,63 @@ def test_calculate_price(products):
         sum += product.price * count
 
     assert shopping_cart.calculate_price() == sum
+
+@pytest.mark.parametrize(
+    "promo",
+    ["STUDENT", "SALE15", "SECRETCODE14531861", "student"]
+)
+def test_apply_correct_promo(promo):
+    shopping_cart = ShoppingCart()
+    shopping_cart.apply_promo_code(promo)
+
+    assert shopping_cart.promo_code == promo.upper()
+
+@pytest.mark.parametrize(
+    "promo",
+    ["daddasda", "dasdas"]
+)
+def test_apply_incorrect_promo(promo):
+    shopping_cart = ShoppingCart()
+
+    with pytest.raises(ValueError):
+        shopping_cart.apply_promo_code(promo)
+
+@pytest.mark.parametrize(
+    "promo",
+    ["STUDENT", "SALE15", "SECRETCODE14531861", "student"]
+)
+def test_remove_promo(promo):
+    shopping_cart = ShoppingCart()
+    shopping_cart.apply_promo_code(promo)
+    shopping_cart.remove_promo_code(promo)
+
+    assert shopping_cart.promo_code is None
+
+@pytest.mark.parametrize(
+    "promo",
+    ["STUDENT", "SALE15", "SECRETCODE14531861"]
+)
+@pytest.mark.parametrize(
+    "products",
+    [
+        [
+            (Product("prod_102", "Смартфон", 18000, 15), 4),
+            (Product("prod_110", "Ноутбук", 77000, 10), 7),
+            (Product("prod_113", "Компьютерная мышь", 3500, 16), 3),
+        ],
+        [
+            (Product("prod_111", "Монитор", 22000, 14), 5),
+            (Product("prod_112", "Клавиатура", 3000, 20), 2),
+            (Product("prod_114", "Процессор", 15000, 4), 2)
+        ]
+    ]
+)
+def test_promo_applied(products, promo):
+    shopping_cart = ShoppingCart()
+    for product, count in products:
+        shopping_cart.add(product, count)
+
+    price_without_promo = shopping_cart.calculate_price()
+    shopping_cart.apply_promo_code(promo)
+
+    assert shopping_cart.calculate_price() == price_without_promo * ((100 - shopping_cart.PROMO_CODES[promo]) / 100)
